@@ -1,0 +1,40 @@
+<html>
+    <head>
+        <title>Find my OctoPrint</title>
+
+        <!-- Enable responsive viewport -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+        <script type="text/javascript" src="./findmyoctoprint.js"></script>
+        <script type="text/javascript">
+            $(function() {
+                var performDiscovery = function() {
+                    var discovered = $("#discovered");
+                    discovered.empty();
+
+                    findmyoctoprint.discover()
+                            .progress(function(entry) {
+                                discovered.append($("<li><a href=\"" + entry.url + "\" target=\"_blank\" title=\"" + entry.uuid + "\">" + entry.name + "</a></li>"));
+                            })
+                            .done(function() {
+                                console.log("Discovery done");
+                            })
+                            .fail(function() {
+                                console.log("Discovery failed");
+                            });
+                };
+
+                $("#rescan").click(performDiscovery);
+                performDiscovery();
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Find my OctoPrint</h1>
+
+        <ul id="discovered"></ul>
+
+        <a id="rescan" href="javascript:void(0)">Rescan...</a>
+    </body>
+</html>
