@@ -4,7 +4,6 @@
 from __future__ import unicode_literals, absolute_import
 
 import tornado.ioloop
-import tornado.template
 import tornado.web
 import json
 import signal
