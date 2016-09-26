@@ -4,6 +4,7 @@
 from __future__ import unicode_literals, absolute_import
 
 import tornado.ioloop
+import tornado.template
 import tornado.web
 import json
 import signal
@@ -89,11 +90,11 @@ class DumpHandler(Handler):
         self._success_response(data=self._db.dump())
 
 
-def run_server(port, db, address=None, cors=None):
+def run_server(port, db, address=None, cors=None, prefix=None):
+    _logger.info("Starting Find My OctoPrint server...")
+
     import os
     static_web_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
-    _logger.info("Starting Find My OctoPrint server...")
-    _logger.info("Using static path {}".format(static_web_path))
 
     ioloop = tornado.ioloop.IOLoop()
     ioloop.install()

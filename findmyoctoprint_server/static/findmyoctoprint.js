@@ -7,7 +7,7 @@
 })(window || this, function($) {
 
     var options = {
-        queryUrl: "https://find.octoprint.org/registry",
+        queryUrl: "./registry",
         urlCheckTimeout: 1000
     };
 
