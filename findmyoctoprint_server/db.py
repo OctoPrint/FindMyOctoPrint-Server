@@ -5,6 +5,7 @@ from __future__ import unicode_literals, absolute_import
 
 import time
 import logging
+import threading
 
 _logger = logging.getLogger("findmyoctoprint.db")
 
@@ -28,6 +29,7 @@ class InMemoryDb(AbstractDb):
     def __init__(self, *args, **kwargs):
         AbstractDb.__init__(self, *args, **kwargs)
         self._registry = dict()
+        self._registry_mutex = threading.RLock()
 
     def record(self, remote_ip, data):
         candidates_for_ip = self._registry.get(remote_ip, dict())
@@ -36,28 +38,32 @@ class InMemoryDb(AbstractDb):
         data["_timestamp"] = time.time()
         candidates_for_ip[uuid] = data
 
-        self._registry[remote_ip] = candidates_for_ip
+        with self._registry_mutex:
+            self._registry[remote_ip] = candidates_for_ip
 
     def candidates_for(self, remote_ip):
         self._cleanup(remote_ip)
-        return self._registry.get(remote_ip, dict())
+        with self._registry_mutex:
+            return self._registry.get(remote_ip, dict())
 
     def dump(self):
         self._cleanup_all()
-        return self._registry
+        with self._registry_mutex:
+            return self._registry
 
     def _cleanup_all(self):
         cutoff = time.time() - self._max_age
 
-        for remote_ip in self._registry:
-            try:
-                self._cleanup(remote_ip, cutoff=cutoff)
-            except:
-                _logger.exception("Error while trying to clean up registry for {}, removing entry completely".format(remote_ip))
+        with self._registry_mutex:
+            for remote_ip in self._registry:
                 try:
-                    del self._registry[remote_ip]
+                    self._cleanup(remote_ip, cutoff=cutoff)
                 except:
-                    _logger.exception("Could not remove registry item {}".format(remote_ip))
+                    _logger.exception("Error while trying to clean up registry for {}, removing entry completely".format(remote_ip))
+                    try:
+                        del self._registry[remote_ip]
+                    except:
+                        _logger.exception("Could not remove registry item {}".format(remote_ip))
 
     def _cleanup(self, remote_ip, cutoff=None):
         if remote_ip not in self._registry:
@@ -66,6 +72,7 @@ class InMemoryDb(AbstractDb):
         if cutoff is None:
             cutoff = time.time() - self._max_age
 
-        self._registry[remote_ip] = dict((uuid, data)
-                                         for uuid, data in self._registry[remote_ip].items()
-                                         if data["_timestamp"] >= cutoff)
+        with self._registry_mutex:
+            self._registry[remote_ip] = dict((uuid, data)
+                                             for uuid, data in self._registry[remote_ip].items()
+                                             if data["_timestamp"] >= cutoff)
