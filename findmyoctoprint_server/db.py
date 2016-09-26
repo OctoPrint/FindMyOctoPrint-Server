@@ -59,11 +59,7 @@ class InMemoryDb(AbstractDb):
                 try:
                     self._cleanup(remote_ip, cutoff=cutoff)
                 except:
-                    _logger.exception("Error while trying to clean up registry for {}, removing entry completely".format(remote_ip))
-                    try:
-                        del self._registry[remote_ip]
-                    except:
-                        _logger.exception("Could not remove registry item {}".format(remote_ip))
+                    _logger.exception("Error while trying to clean up registry for {}".format(remote_ip))
 
     def _cleanup(self, remote_ip, cutoff=None):
         if remote_ip not in self._registry:
