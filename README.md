@@ -2,12 +2,12 @@
 
 ## Installation
 
-Download current tarball, then:
-
 ```
-virtualenv findmyoctoprint
-source findmyoctoprint/bin/activate
-pip install <tarball>
+git clone https://github.com/foosel/FindMyOctoPrint-Server
+cd FindMyOctoPrint-Server
+virtualenv venv
+source venv/bin/activate
+pip install .
 ```
 
 ## Usage
