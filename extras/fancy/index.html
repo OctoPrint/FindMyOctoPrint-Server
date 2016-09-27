@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html lang="en" xmlns="http://www.w3.org/1999/html"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8" />
+    <title>Find My OctoPrint!</title>
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le styles -->
+    <link rel="stylesheet" href="./assets/site.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.1/css/bootstrap-responsive.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r224/prettify.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css">
+    <style>
+        #content {
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        #discovered .btn {
+            margin: 1em 0;
+        }
+
+        #working {
+            margin: 2em 0;
+            text-align: center;
+        }
+
+        #working i {
+            font-size: 500%;
+            color: #dddddd;
+        }
+
+        #error, #nothing {
+            text-align: center;
+        }
+    </style>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+    <script src="https://find.octoprint.org/findmyoctoprint.js"></script>
+    <script>
+        $(function() {
+            var discovered = $("#discovered");
+            var working = $("#working");
+            var error = $("#error");
+            var nothing = $("#nothing");
+
+            findmyoctoprint.options.queryUrl = "https://find.octoprint.org/registry";
+
+            var createInstanceButton = function(entry) {
+                return $("<a href=\"" + entry.url + "\" target=\"_blank\" class=\"btn btn-primary btn-large btn-block\">" + entry.name + "</a>");
+            };
+
+            var performDiscovery = function() {
+                discovered.hide();
+                nothing.hide();
+                error.hide();
+
+                working.show();
+
+                discovered.empty();
+
+                findmyoctoprint.discover()
+                        .progress(function(entry) {
+                            discovered.append(createInstanceButton(entry));
+                            working.hide();
+                            discovered.show();
+                        })
+                        .done(function(entries) {
+                            console.log("Discovery done");
+                            working.hide();
+                            if (_.keys(entries).length == 0) {
+                                nothing.show();
+                            }
+                        })
+                        .fail(function() {
+                            console.log("Discovery failed");
+                            working.hide();
+                            error.show();
+                        });
+            };
+
+            $("#rescan").click(performDiscovery);
+            performDiscovery();
+        });
+    </script>
+</head>
+
+<body>
+
+<div class="navbar navbar-inverse navbar-static-top">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand hidden-phone" href="/"><img src="./assets/tentacle-20x20.png" alt="Tentacle logo" class="tentacle"> Find My OctoPrint!</a>
+      <a class="brand visible-phone" href="/"><img src="./assets/tentacle-20x20.png" alt="Tentacle logo" class="tentacle"> Find My OctoPrint!</a>
+      <a href="javascript:void(0)" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+      <div class="pull-right">
+        <ul class="nav social-navbar">
+          <li><a href="http://octoprint.org/support-octoprint/" title="Support OctoPrint!" target="_blank"><img src="./assets/patreon.png" style="height: 18px; margin-top: -4px"></a></li>
+        </ul>
+      </div>
+      <div class="nav-collapse collapse">
+        <ul class="nav">
+          <li><a href="javascript:void(0)" id="rescan">Rescan...</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="content">
+    <div class="container">
+        <div class="span4 offset4">
+            <div id="discovered" style="display: none"></div>
+            <div id="working" style="display: none"><i class="icon-refresh icon-spin"></i></div>
+            <div id="nothing" style="display: none">No instances found.</div>
+            <div id="error" style="display: none" class="text-error">There was an error during discovery. Please try again later.</div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r224/prettify.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
+
+</body>
+</html>
