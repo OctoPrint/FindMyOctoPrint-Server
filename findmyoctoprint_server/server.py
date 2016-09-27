@@ -18,6 +18,10 @@ class Handler(tornado.web.RequestHandler):
     def initialize(self, cors):
         self._cors = cors
 
+    def set_default_headers(self):
+        self.set_header("Server", "FindMyOctoPrint")
+        self.set_header("Cache-Control", "no-cache")
+
     def _response(self, status_code, result, data=None):
         if data is None:
             data = dict()
