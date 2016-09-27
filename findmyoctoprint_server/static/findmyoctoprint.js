@@ -87,7 +87,7 @@
                 });
 
                 $.when.apply($, promises).then(function() {
-                    deferred.resolve();
+                    deferred.resolve(foundUuids);
                 });
             })
             .fail(function() {
