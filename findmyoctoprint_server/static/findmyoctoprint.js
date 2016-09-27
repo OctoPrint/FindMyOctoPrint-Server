@@ -67,7 +67,12 @@
                             .done(function () {
                                 console.log("candidate", url.target, "checked out");
                                 if (foundUuids[candidate.uuid] != undefined) return;
-                                var entry = {url: url.target, name: url.name, uuid: uuid};
+                                var entry = {
+                                    url: url.target,
+                                    name: url.name,
+                                    color: url.color,
+                                    uuid: uuid
+                                };
                                 foundUuids[uuid] = entry;
                                 deferred.notify(entry);
                                 promise.resolve();
@@ -79,7 +84,12 @@
                     };
 
                     $.each(candidate.urls, function (index, url) {
-                        potentialUrls.push({target: url, query: url + candidate.query, name: candidate.name || url});
+                        potentialUrls.push({
+                            target: url,
+                            query: url + candidate.query,
+                            name: candidate.name || url,
+                            color: candidate.color
+                        });
                     });
 
                     console.log("Checking", potentialUrls.length, "urls for candidate", candidate.uuid);

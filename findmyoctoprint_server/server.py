@@ -76,11 +76,40 @@ class ApiHandler(Handler):
             return
         if "urls" not in data:
             self._bad_request("data does not contain urls")
+            return
+
+        try:
+            data = self._sanitize_data(data)
+        except ValueError:
+            self._bad_request("data did not pass sanitization")
+            return
 
         remote_ip = self._remote_ip()
         self._db.record(remote_ip, data)
         self._success_response(data=dict(remote_ip=remote_ip))
 
+    def _sanitize_data(self, data):
+        import uuid
+        import urllib
+        import markupsafe
+
+        # validate uuid
+        uuid.UUID(data["uuid"], version=4)
+
+        # validate urls
+        data["urls"] = [url for url in data["urls"] if url.startswith("http://") or url.startswith("https://")]
+
+        # escape query
+        data["query"] = urllib.quote(data["query"])
+
+        # escape name and color
+        if "name" in data:
+            data["name"] = markupsafe.escape(data["name"])
+
+        if "color" in data:
+            data["color"] = markupsafe.escape(data["color"])
+
+        return data
 
 class DumpHandler(Handler):
     """This should be limited to access from localhost in the used reverse proxy."""

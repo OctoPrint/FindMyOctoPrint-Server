@@ -5,7 +5,8 @@ from setuptools import setup
 
 INSTALL_REQUIRES = [
     "tornado",
-    "click"
+    "click",
+    "markupsafe"
 ]
 
 def package_data_dirs(source, sub_folders):
