@@ -13,7 +13,7 @@ pip install .
 ## Usage
 
 ```
-$ findmyoctoprint --help
+(venv) $ findmyoctoprint --help
 Usage: findmyoctoprint-script.py [OPTIONS]
 
 Options:
@@ -26,105 +26,93 @@ Options:
 ### Example
 
 ```
-$ findmyoctoprint --port 5000 --address 127.0.0.1 --cors "http://example.com"
+(venv) $ findmyoctoprint --port 5000 --address 127.0.0.1 --cors "http://example.com"
 2016-09-26 17:22:21,555 - findmyoctoprint.server - INFO - Starting Find My OctoPrint server...
 2016-09-26 17:22:21,628 - findmyoctoprint.server - INFO - Binding to 127.0.0.1:5000
 ```
 
+### System service
+
+Init script and systemd service file can be found in ``extras/service``.
+ 
+Be sure to adjust ``/etc/default/findmyoctoprint`` (when using sysvinit)
+or ``/etc/systemd/service/findmyoctoprint.service`` (when using systemd)
+to match your setup with regards to server executable path, binded address,
+port and allowed CORS host.
+
 ## Setup Nginx
 
-```
-sudo apt-get install nginx
-```
+Configuration samples can be found in ``extra/nginx``.
 
-Basic configuration:
-
-```
-server {
-        listen 80;
-
-        server_name example.com;
-        server_tokens off;
-
-        gzip on;
-        gzip_vary on;
-        gzip_min_length 1000;
-        gzip_comp_level 5;
-        gzip_types application/json text/css application/x-javascript application/javascript;
-
-        keepalive_timeout 65;
-
-        root /var/www/html;
-
-        index index.html index.htm index.nginx-debian.html;
-
-        location / {
-                proxy_pass http://127.0.0.1:5000/;
-                proxy_set_header        X-Real-IP       $remote_addr;
-                proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-        }
-
-        location /dump {
-                # restrict to localhost
-                allow 127.0.0.0/8;
-                deny all;
-                proxy_pass http://127.0.0.1:5000/dump;
-        }
-
-        location /.well-known/acme-challenge/ {
-                default_type "text/plain";
-                root /usr/share/nginx/html/acme;
-        }
-}
-```
-
-Configuration incl. LetsEncrypt using [acmetool](https://hlandau.github.io/acme/) with custom HTML in `/var/www/html`:
+When accessing the registry via https from a http page (e.g.
+you are accessing the page on ``http://example.com`` and it uses
+``https://example.com/registry`` as endpoint for querying the registry),
+make sure to set the CORS allowed header via the ``--cors`` command
+line argument on server start to allow access to the registry from
+``http://example.com``:
 
 ```
-server {
-        listen 80;
-        listen 443 ssl;
+$ findmyoctoprint --port 5000 --address 127.0.0.1 --cors "http://example.com"
+```
 
-        server_name example.com;
-        server_tokens off;
+## Sample page & client usage
 
-        gzip on;
-        gzip_vary on;
-        gzip_min_length 1000;
-        gzip_comp_level 5;
-        gzip_types application/json text/css application/x-javascript application/javascript;
+The following sample page is very similar to the included stock ``index.html`` but
+shows how to configure the included ``findmyoctoprint.js`` module.
 
-        keepalive_timeout 65;
+The server here is assumed as running under both ``http://example.com``
+and ``https://example.com`` - adjust accordingly.
 
-        ssl_certificate /var/lib/acme/live/example.com/fullchain;
-        ssl_certificate_key /var/lib/acme/live/example.com/privkey;
-        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-        ssl_ciphers HIGH:!aNULL:!MD5;
+The endpoint for querying the server's registry is set via ``findmyoctoprint.options.queryUrl``.
 
-        root /var/www/html;
+``findmyoctoprint.discover`` returns a promise - individual discovered
+entries are provided as progress, the promise is finally resolved with a full
+set of all discovered entries, as an object mapping from found UUID to discovered entry.
 
-        index index.html index.htm index.nginx-debian.html;
+Entries consist of the fields ``url``, ``name`` and ``uuid``.
 
-        location /findmyoctoprint.js {
-                proxy_pass http://127.0.0.1:5000/findmyoctoprint.js;
-        }
+```
+<html>
+    <head>
+        <title>Find my OctoPrint</title>
 
-        location /registry {
-                proxy_pass http://127.0.0.1:5000/registry;
-                proxy_set_header        X-Real-IP       $remote_addr;
-                proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-        }
+        <!-- Enable responsive viewport -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        location /dump {
-                # restrict to localhost
-                allow 127.0.0.0/8;
-                deny all;
-                proxy_pass http://127.0.0.1:5000/dump;
-        }
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+        <script type="text/javascript" src="https://example.com/findmyoctoprint.js"></script>
+        <script type="text/javascript">
+            $(function() {
+                findmyoctoprint.options.queryUrl = "https://example.com/registry";
+            
+                var performDiscovery = function() {
+                    var discovered = $("#discovered");
+                    discovered.empty();
 
-        location /.well-known/acme-challenge/ {
-                default_type "text/plain";
-                root /usr/share/nginx/html/acme;
-        }
-}
+                    findmyoctoprint.discover()
+                            .progress(function(entry) {
+                                console.log("Found entry:", entry);
+                                discovered.append($("<li><a href=\"" + entry.url + "\" target=\"_blank\" title=\"" + entry.uuid + "\">" + entry.name + "</a></li>"));
+                            })
+                            .done(function(entries) {
+                                console.log("Discovery done, entries:", entries);
+                            })
+                            .fail(function() {
+                                console.log("Discovery failed");
+                            });
+                };
+
+                $("#rescan").click(performDiscovery);
+                performDiscovery();
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Find my OctoPrint</h1>
+
+        <ul id="discovered"></ul>
+
+        <a id="rescan" href="javascript:void(0)">Rescan...</a>
+    </body>
+</html>
 ```
