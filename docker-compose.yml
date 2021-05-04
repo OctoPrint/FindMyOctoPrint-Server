@@ -5,4 +5,5 @@ services:
     container_name: findmyoctoprint-server
     ports:
     - "5555:5000"
+    command: --cors https://example.com
     restart: always

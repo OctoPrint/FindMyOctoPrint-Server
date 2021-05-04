@@ -3,18 +3,19 @@
 ## Installation
 
 ```
-git clone https://github.com/foosel/FindMyOctoPrint-Server
+git clone https://github.com/OctoPrint/FindMyOctoPrint-Server
 cd FindMyOctoPrint-Server
-virtualenv venv
-source venv/bin/activate
-pip install .
+docker build -t findmyoctoprint .
+docker run findmyoctoprint
 ```
+
+There's also a sample `docker-compose.yml` for you to adjust as needed.
 
 ## Usage
 
 ```
-(venv) $ findmyoctoprint --help
-Usage: findmyoctoprint-script.py [OPTIONS]
+$ docker run findmyoctoprint --help
+Usage: __init__.py [OPTIONS]
 
 Options:
   --address TEXT  The host under which to run
@@ -26,19 +27,10 @@ Options:
 ### Example
 
 ```
-(venv) $ findmyoctoprint --port 5000 --address 127.0.0.1 --cors "http://example.com"
+$ docker run findmyoctoprint --port 5000 --address 127.0.0.1 --cors "http://example.com"
 2016-09-26 17:22:21,555 - findmyoctoprint.server - INFO - Starting Find My OctoPrint server...
 2016-09-26 17:22:21,628 - findmyoctoprint.server - INFO - Binding to 127.0.0.1:5000
 ```
-
-### System service
-
-Init script and systemd service file can be found in ``extras/service``.
- 
-Be sure to adjust ``/etc/default/findmyoctoprint`` (when using sysvinit)
-or ``/etc/systemd/service/findmyoctoprint.service`` (when using systemd)
-to match your setup with regards to server executable path, binded address,
-port and allowed CORS host.
 
 ## Setup Nginx
 
@@ -52,7 +44,7 @@ line argument on server start to allow access to the registry from
 ``http://example.com``:
 
 ```
-$ findmyoctoprint --port 5000 --address 127.0.0.1 --cors "http://example.com"
+$ docker run findmyoctoprint --port 5000 --address 127.0.0.1 --cors "http://example.com"
 ```
 
 ## Sample page & client usage
