@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-# coding=utf-8
-
-from __future__ import unicode_literals, absolute_import
 
 import tornado.ioloop
 import tornado.web
@@ -90,7 +87,7 @@ class ApiHandler(Handler):
 
     def _sanitize_data(self, data):
         import uuid
-        import urllib
+        import urllib.parse
         import markupsafe
 
         # validate uuid
@@ -100,7 +97,7 @@ class ApiHandler(Handler):
         data["urls"] = [url for url in data["urls"] if url.startswith("http://") or url.startswith("https://")]
 
         # escape query
-        data["query"] = urllib.quote(data["query"])
+        data["query"] = urllib.parse.quote(data["query"])
 
         # escape name and color
         if "name" in data:
@@ -149,7 +146,7 @@ def run_server(port, db, address=None, cors=None, prefix=None):
 
     if platform.system() == "Windows":
         # periodic no-op callback to allow us to detect Ctrl+C
-        periodic_callback = tornado.ioloop.PeriodicCallback(lambda: None, 500, io_loop=ioloop)
+        periodic_callback = tornado.ioloop.PeriodicCallback(lambda: None, 500)
         periodic_callback.start()
 
     _logger.info("Binding to {}:{}".format(address if address else "0.0.0.0", port))

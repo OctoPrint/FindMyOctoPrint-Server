@@ -1,0 +1,8 @@
+version: "2"
+services:
+  findmyoctoprint-server:
+    build: .
+    container_name: findmyoctoprint-server
+    ports:
+    - "5555:5000"
+    restart: always

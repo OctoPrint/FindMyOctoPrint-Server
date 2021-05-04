@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-# coding=utf-8
 
-from __future__ import unicode_literals, absolute_import
 
 import time
 import logging
@@ -9,7 +7,7 @@ import threading
 
 _logger = logging.getLogger("findmyoctoprint.db")
 
-class AbstractDb(object):
+class AbstractDb:
 
     def __init__(self, max_age):
         self._max_age = max_age
@@ -59,7 +57,7 @@ class InMemoryDb(AbstractDb):
                 try:
                     self._cleanup(remote_ip, cutoff=cutoff)
                 except:
-                    _logger.exception("Error while trying to clean up registry for {}".format(remote_ip))
+                    _logger.exception(f"Error while trying to clean up registry for {remote_ip}")
 
     def _cleanup(self, remote_ip, cutoff=None):
         if remote_ip not in self._registry:
@@ -69,6 +67,6 @@ class InMemoryDb(AbstractDb):
             cutoff = time.time() - self._max_age
 
         with self._registry_mutex:
-            self._registry[remote_ip] = dict((uuid, data)
+            self._registry[remote_ip] = {uuid: data
                                              for uuid, data in self._registry[remote_ip].items()
-                                             if data["_timestamp"] >= cutoff)
+                                             if data["_timestamp"] >= cutoff}
