@@ -12,10 +12,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Le styles -->
-    <link rel="stylesheet" href="./assets/site.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.1/css/bootstrap-responsive.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r224/prettify.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://octoprint.org/assets/css/site.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/css/bootstrap-responsive.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         #content {
             position: relative;
@@ -42,97 +42,97 @@
         }
     </style>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+<script src="https://findd.octoprint.org/findmyoctoprint.js"></script>
+<script>
+    $(function() {
+        var discovered = $("#discovered");
+        var working = $("#working");
+        var error = $("#error");
+        var nothing = $("#nothing");
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
-    <script src="https://find.octoprint.org/findmyoctoprint.js"></script>
-    <script>
-        $(function() {
-            var discovered = $("#discovered");
-            var working = $("#working");
-            var error = $("#error");
-            var nothing = $("#nothing");
+        findmyoctoprint.options.queryUrl = "https://findd.octoprint.org/registry";
 
-            findmyoctoprint.options.queryUrl = "https://find.octoprint.org/registry";
+        var createInstanceButton = function(entry) {
+            return $("<a href=\"" + entry.url + "\" target=\"_blank\" class=\"btn btn-primary btn-large btn-block\">" + entry.name + "</a>");
+        };
 
-            var createInstanceButton = function(entry) {
-                return $("<a href=\"" + entry.url + "\" target=\"_blank\" class=\"btn btn-primary btn-large btn-block\">" + entry.name + "</a>");
-            };
+        var performDiscovery = function() {
+            discovered.hide();
+            nothing.hide();
+            error.hide();
 
-            var performDiscovery = function() {
-                discovered.hide();
-                nothing.hide();
-                error.hide();
+            working.show();
 
-                working.show();
+            discovered.empty();
 
-                discovered.empty();
+            findmyoctoprint.discover()
+                    .progress(function(entry) {
+                        discovered.append(createInstanceButton(entry));
+                        working.hide();
+                        discovered.show();
+                    })
+                    .done(function(entries) {
+                        console.log("Discovery done");
+                        working.hide();
+                        if (_.keys(entries).length == 0) {
+                            nothing.show();
+                        }
+                    })
+                    .fail(function() {
+                        console.log("Discovery failed");
+                        working.hide();
+                        error.show();
+                    });
+        };
 
-                findmyoctoprint.discover()
-                        .progress(function(entry) {
-                            discovered.append(createInstanceButton(entry));
-                            working.hide();
-                            discovered.show();
-                        })
-                        .done(function(entries) {
-                            console.log("Discovery done");
-                            working.hide();
-                            if (_.keys(entries).length == 0) {
-                                nothing.show();
-                            }
-                        })
-                        .fail(function() {
-                            console.log("Discovery failed");
-                            working.hide();
-                            error.show();
-                        });
-            };
-
-            $("#rescan").click(performDiscovery);
-            performDiscovery();
-        });
-    </script>
+        $("#rescan").click(performDiscovery);
+        performDiscovery();
+    });
+</script>
 </head>
 
-<body>
+<body style="min-height: 100vh">
 
-<div class="navbar navbar-inverse navbar-static-top">
-  <div class="navbar-inner">
-    <div class="container">
-      <a class="brand hidden-phone" href="/"><img src="./assets/tentacle-20x20.png" alt="Tentacle logo" class="tentacle"> Find My OctoPrint!</a>
-      <a class="brand visible-phone" href="/"><img src="./assets/tentacle-20x20.png" alt="Tentacle logo" class="tentacle"> Find My OctoPrint!</a>
-      <a href="javascript:void(0)" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </a>
-      <div class="pull-right">
-        <ul class="nav social-navbar">
-          <li><a href="http://octoprint.org/support-octoprint/" title="Support OctoPrint!" target="_blank"><img src="./assets/patreon.png" style="height: 18px; margin-top: -4px"></a></li>
-        </ul>
-      </div>
-      <div class="nav-collapse collapse">
-        <ul class="nav">
-          <li><a href="javascript:void(0)" id="rescan">Rescan...</a></li>
-        </ul>
+    <div class="navbar navbar-inverse navbar-static-top">
+      <div class="navbar-inner">
+        <div class="container">
+                <a class="brand" href="/"><img src="./assets/tentacle-20x20.png" alt="Tentacle logo" class="tentacle"><span class="hidden-phone"> Find My OctoPrint!</span></a>
+          <a href="javascript:void(0)" class="btn btn-burger btn-navbar" data-toggle="collapse" data-target=".nav-collapse"><i class="fas fa-bars"></i></a>
+          <div class="pull-right">
+            <ul class="nav social-navbar">
+                    <li><a href="https://octoprint.org" title="OctoPrint.org" target="_blank"><i class="fa fa-home"></i></a></li>
+                    <li><a href="https://merch.octoprint.org/" title="Get some merchandise!" target="_blank"><i class="fa fa-shopping-basket"></i></a></li>
+                    <li><a href="https://support.octoprint.org/" title="Support OctoPrint!" target="_blank"><i class="fa fa-donate"></i></a></li>
+            </ul>
+          </div>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li><a href="javascript:void(0)" id="rescan">Rescan...</a></li>
+              <li><a href="https://octoprint.org/imprint" target="_blank">Imprint</a></li>
+              <li><a href="https://octoprint.org/privacy" target="_blank">Privacy Policy</a></li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
-
-<div id="content">
-    <div class="container">
-        <div class="span4 offset4">
-            <div id="discovered" style="display: none"></div>
-            <div id="working" style="display: none"><i class="icon-refresh icon-spin"></i></div>
-            <div id="nothing" style="display: none">No instances found.</div>
-            <div id="error" style="display: none" class="text-error">There was an error during discovery. Please try again later.</div>
+    
+    
+    <div id="content">
+        <div class="container">
+            <div class="span4 offset4">
+                <div id="discovered" style="display: none"></div>
+                <div id="working" style="display: none"><i class="icon-refresh icon-spin"></i></div>
+                <div id="nothing" style="display: none">No instances found.</div>
+                <div id="error" style="display: none" class="text-error">There was an error during discovery. Please try again later.</div>
+            </div>
         </div>
     </div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r224/prettify.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
-
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+    
 </body>
 </html>
+    
